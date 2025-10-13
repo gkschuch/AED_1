@@ -19,11 +19,9 @@ int main() {
 
   char *result = restoreString(s, indices, size);
 
-  if (result != NULL) {
+  if (result != NULL)
     printf("%s\n", result);
 
-    free(result);
-  }
-
+  free(result);
   return 0;
 }
