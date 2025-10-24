@@ -7,19 +7,25 @@
 #define AGE_SIZE sizeof(int)
 #define PERSON_SIZE (NAME_SIZE + EMAIL_SIZE + AGE_SIZE)
 
-#define INITIAL_SIZE ((sizeof(int) * 5) + PERSON_SIZE)
+#define INITIAL_SIZE ((sizeof(int) * 6) + PERSON_SIZE)
 /*
-    MEMORY LAYOUT:
-    [offset 0]= (int*) pMenu
-    [offset sizeof(int)]= (int*) pCount
-    [offset sizeof(int)*2]= (int*) pI(para os loops)
-    [offset sizeof(int)*3]= (int*) pJ(para os loops)
-    [offset sizeof(int)*4]= (int*) pIndexFound
-    [offset sizeof(int)*5] = buffer temporario dos nomes
+        MEMORY LAYOUT:
+    (int*)pBuffer + 0: pMenu
+    (int*)pBuffer + 1: pCount
+    (int*)pBuffer + 2: pCapacity
+    (int*)pBuffer + 3: pI
+    (int*)pBuffer + 4: pJ
+    (int*)pBuffer + 5: pIndexFound
+    Depois disso: Buffers temporários (PERSON_SIZE bytes)
+
+    PERSON REGISTER LAYOUT:
+    Name
+    Email
+    Age
 */
 
 void menu();
-// void addPerson(void *pBuffer);
+void addPerson(void **pBufferPtr);
 // void removePerson(void *pBuffer);
 // void searchPerson(void *pBuffer);
 // void listAgenda(void *pBuffer);
@@ -30,13 +36,17 @@ int main() {
     printf("pBuffer: Memory Allocation failed\n");
     return 1;
   }
+  memset(pBuffer, 0, INITIAL_SIZE);
+
+  *((int *)pBuffer + 1) = 0; // zera o contador de pessoas
+  *((int *)pBuffer + 2) = 0; // zera a capacidade
   while (1) {
     menu();
     printf("\nInsert a command: ");
     scanf("%d", (int *)pBuffer);
     switch (*(int *)pBuffer) {
     case 1:
-      //   addPerson(pBuffer);
+      addPerson(&pBuffer);
       break;
     case 2:
       //   removePerson(pBuffer);
@@ -67,4 +77,44 @@ void menu() {
   printf("\t3) SEARCH PERSON (by name)\n");
   printf("\t4) LIST AGENDA\n");
   printf("\t5) QUIT\n");
+}
+
+void addPerson(void **pBufferPtr) {
+  void *pBuffer = *pBufferPtr;
+  void *newBuffer;
+
+  //     Count >= Capacity
+  if (*((int *)pBuffer + 1) >= *((int *)pBuffer + 2)) {
+    (*((int *)pBuffer + 2))++; // Capacity++;
+    newBuffer = realloc(pBuffer,
+                        INITIAL_SIZE + ((*((int *)pBuffer + 2)) * PERSON_SIZE));
+    if (newBuffer == NULL) {
+      printf("pBuffer: Error reallocating\n");
+      (*((int *)pBuffer + 2))--; // Capacity--;
+      return;
+    }
+    *pBufferPtr = newBuffer;
+    pBuffer = newBuffer;
+  }
+  void *pTemp = ((int *)pBuffer + 6); // Avança até o campo buffers temporarios
+                                      //   (Nome, email, e idade)
+  printf("Person to add\n");
+  printf("\tInsert Name: ");
+  scanf(" %[^\n]", (char *)pTemp);
+  printf("\tInsert Email: ");
+  scanf(" %[^\n]", (char *)(pTemp + NAME_SIZE));
+  printf("\tInsert Age: ");
+  scanf(" %d", (int *)(pTemp + NAME_SIZE + EMAIL_SIZE));
+
+  strcpy((char *)(pBuffer + INITIAL_SIZE +
+                  ((*((int *)pBuffer + 1)) * PERSON_SIZE)),
+         pTemp); // Copia Nome
+  strcpy((char *)(pBuffer + INITIAL_SIZE +
+                  ((*((int *)pBuffer + 1)) * PERSON_SIZE) + NAME_SIZE),
+         pTemp + NAME_SIZE); // Copia Email
+  *((int *)(pBuffer + INITIAL_SIZE + ((*((int *)pBuffer + 1)) * PERSON_SIZE) +
+            NAME_SIZE + EMAIL_SIZE)) =
+      *((int *)(pTemp + NAME_SIZE + EMAIL_SIZE));
+
+  (*((int *)pBuffer + 1))++;
 }
