@@ -7,14 +7,13 @@
 #define AGE_SIZE sizeof(int)
 #define PERSON_SIZE (NAME_SIZE + EMAIL_SIZE + AGE_SIZE)
 
-#define INITIAL_SIZE ((sizeof(int) * 6) + PERSON_SIZE)
+#define INITIAL_SIZE ((sizeof(int) * 5) + PERSON_SIZE)
 /*
         MEMORY LAYOUT:
     (int*)pBuffer + 0: pMenu
     (int*)pBuffer + 1: pCount
     (int*)pBuffer + 2: pCapacity
     (int*)pBuffer + 3: pI
-    (int*)pBuffer + 4: pJ
     (int*)pBuffer + 5: pIndexFound
     Depois disso: Buffers temporários (PERSON_SIZE bytes)
 
@@ -28,7 +27,7 @@ void menu();
 void addPerson(void **pBufferPtr);
 // void removePerson(void *pBuffer);
 // void searchPerson(void *pBuffer);
-// void listAgenda(void *pBuffer);
+void listAgenda(void *pBuffer);
 
 int main() {
   void *pBuffer = malloc(INITIAL_SIZE);
@@ -43,7 +42,7 @@ int main() {
   while (1) {
     menu();
     printf("\nInsert a command: ");
-    scanf("%d", (int *)pBuffer);
+    scanf(" %d", (int *)pBuffer);
     switch (*(int *)pBuffer) {
     case 1:
       addPerson(&pBuffer);
@@ -55,7 +54,7 @@ int main() {
       //   searchPerson(pBuffer);
       break;
     case 4:
-      //   listAgenda(pBuffer);
+      listAgenda(pBuffer);
       break;
     case 5:
       printf("CLOSING AGENDA...\n");
@@ -96,7 +95,7 @@ void addPerson(void **pBufferPtr) {
     *pBufferPtr = newBuffer;
     pBuffer = newBuffer;
   }
-  void *pTemp = ((int *)pBuffer + 6); // Avança até o campo buffers temporarios
+  void *pTemp = ((int *)pBuffer + 5); // Avança até o campo buffers temporarios
                                       //   (Nome, email, e idade)
   printf("Person to add\n");
   printf("\tInsert Name: ");
@@ -117,4 +116,31 @@ void addPerson(void **pBufferPtr) {
       *((int *)(pTemp + NAME_SIZE + EMAIL_SIZE));
 
   (*((int *)pBuffer + 1))++;
+}
+
+void listAgenda(void *pBuffer) {
+  //   Check if pCount is equal to 0
+  if ((*((int *)pBuffer + 1)) == 0) {
+    printf("ERROR: Agenda is empty\n");
+    return;
+  }
+
+  printf("\t AGENDA LIST (%d)\n", *((int *)pBuffer + 1));
+  //   for(int i = 0; i< count;i++);
+  for (*((int *)pBuffer + 3) = 0;
+       (*((int *)pBuffer + 3)) < (*((int *)pBuffer + 1));
+       (*((int *)pBuffer + 3))++) {
+    printf("Name: ");
+    printf("%s\n", (char *)(pBuffer + INITIAL_SIZE +
+                            ((*((int *)pBuffer + 3)) * PERSON_SIZE)));
+    printf("E-mail: ");
+    printf("%s\n",
+           (char *)(pBuffer + INITIAL_SIZE +
+                    ((*((int *)pBuffer + 3)) * PERSON_SIZE) + NAME_SIZE));
+    printf("Age: ");
+    printf("%d\n", *((int *)(pBuffer + INITIAL_SIZE +
+                             ((*((int *)pBuffer + 3)) * PERSON_SIZE) +
+                             NAME_SIZE + EMAIL_SIZE)));
+    printf("\n");
+  }
 }
