@@ -26,7 +26,7 @@
 void menu();
 void addPerson(void **pBufferPtr);
 // void removePerson(void *pBuffer);
-// void searchPerson(void *pBuffer);
+void searchPerson(void *pBuffer);
 void listAgenda(void *pBuffer);
 
 int main() {
@@ -51,7 +51,7 @@ int main() {
       //   removePerson(pBuffer);
       break;
     case 3:
-      //   searchPerson(pBuffer);
+      searchPerson(pBuffer);
       break;
     case 4:
       listAgenda(pBuffer);
@@ -117,7 +117,40 @@ void addPerson(void **pBufferPtr) {
 
   (*((int *)pBuffer + 1))++;
 }
+void searchPerson(void *pBuffer) {
+  //   Check if pCount is equal to 0
+  if ((*((int *)pBuffer + 1)) == 0) {
+    printf("ERROR: Agenda is empty\n");
+    return;
+  }
+  void *pTemp = ((int *)pBuffer + 5);
+  printf("\tInsert Name: ");
+  scanf(" %[^\n]", (char *)pTemp);
 
+  //   for(int i = 0; i< count;i++);
+  for (*((int *)pBuffer + 3) = 0;
+       (*((int *)pBuffer + 3)) < (*((int *)pBuffer + 1));
+       (*((int *)pBuffer + 3))++) {
+    if (strcmp((char *)pTemp,
+               (char *)(pBuffer + INITIAL_SIZE +
+                        ((*((int *)pBuffer + 3)) * PERSON_SIZE))) == 0) {
+      printf("Name: ");
+      printf("%s\n", (char *)(pBuffer + INITIAL_SIZE +
+                              ((*((int *)pBuffer + 3)) * PERSON_SIZE)));
+      printf("E-mail: ");
+      printf("%s\n",
+             (char *)(pBuffer + INITIAL_SIZE +
+                      ((*((int *)pBuffer + 3)) * PERSON_SIZE) + NAME_SIZE));
+      printf("Age: ");
+      printf("%d\n", *((int *)(pBuffer + INITIAL_SIZE +
+                               ((*((int *)pBuffer + 3)) * PERSON_SIZE) +
+                               NAME_SIZE + EMAIL_SIZE)));
+      printf("\n");
+      return;
+    }
+  }
+  printf("ERROR: %s not found\n", (char *)pTemp);
+}
 void listAgenda(void *pBuffer) {
   //   Check if pCount is equal to 0
   if ((*((int *)pBuffer + 1)) == 0) {
