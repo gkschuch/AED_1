@@ -46,6 +46,6 @@ int main() {
     printf("False");
   }
   for (int i = 0; i < size; i++) {
-    printf("%d\n", flowerbed[i]);
+    printf("\n%d", flowerbed[i]);
   }
 }
