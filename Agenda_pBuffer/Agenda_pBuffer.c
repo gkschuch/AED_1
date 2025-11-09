@@ -77,9 +77,11 @@ void initBuffer(void **pBufferPtr) {
     exit(1);
   }
   // Seta os valores iniciais
-  *pCapacity(*pBufferPtr) = 0; // seta a capacidade inicial dos dados para 0
-  *pCount(*pBufferPtr) = 0;    // zera o contador de pessoas
-  *pUsed(*pBufferPtr) = 0;     // espaco usado para os dados(inicial = 0)
+  *pCapacity(*pBufferPtr) =
+      DATA_START_OFFSET;    // seta a capacidade inicial dos dados para 0
+  *pCount(*pBufferPtr) = 0; // zera o contador de pessoas
+  *pUsed(*pBufferPtr) =
+      DATA_START_OFFSET; // local para o comeco da area de dados
   *pTotalPersonSize(*pBufferPtr) = 0;
 
   // Zera todos as variaveis de controle
@@ -221,20 +223,21 @@ void listAgenda(void *pBuffer) {
     printf("ERROR: Agenda is empty\n");
     return;
   }
-
+  void *pReader = (char *)pBuffer + DATA_START_OFFSET;
   printf("\t AGENDA LIST (%d)\n", *pCount(pBuffer));
   //   for(int i = 0; i< count;i++);
   for (*pI(pBuffer) = 0; (*pI(pBuffer)) < *pCount(pBuffer); (*pI(pBuffer))++) {
-    printf("Name: ");
-    printf("%s\n",
-           (char *)(pBuffer + INITIAL_SIZE + ((*pI(pBuffer)) * PERSON_SIZE)));
-    printf("E-mail: ");
-    printf("%s\n", (char *)(pBuffer + INITIAL_SIZE +
-                            ((*pI(pBuffer)) * PERSON_SIZE) + NAME_SIZE));
-    printf("Age: ");
-    printf("%d\n",
-           *((int *)(pBuffer + INITIAL_SIZE + ((*pI(pBuffer)) * PERSON_SIZE) +
-                     NAME_SIZE + EMAIL_SIZE)));
+    printf("Name: %s\n", (char *)pReader);
+
+    // Pula o Tamanho do Nome + \0
+    pReader = pReader + strlen((char *)pReader) + 1;
+    printf("Email: %s\n", (char *)pReader);
+
+    // Pula o Tamanho do Email + \0
+    pReader = pReader + strlen((char *)pReader) + 1;
+    printf("Age: %d\n", *((int *)pReader));
     printf("\n");
+    // Pula o tamanho do inteiro para o nome
+    pReader = pReader + sizeof(int);
   }
 }
