@@ -28,8 +28,9 @@
 
 void menu();
 void initBuffer(void **pBufferPtr);
+
 void addPerson(void **pBufferPtr);
-// void removePerson(void *pBuffer);
+void removePerson(void **pBufferPtr);
 void searchPerson(void *pBuffer);
 void listAgenda(void *pBuffer);
 
@@ -46,7 +47,7 @@ int main() {
       addPerson(&pBuffer);
       break;
     case 2:
-      // removePerson(pBuffer);
+      removePerson(&pBuffer);
       break;
     case 3:
       searchPerson(pBuffer);
@@ -118,6 +119,9 @@ void addPerson(void **pBufferPtr) {
   *pTotalPersonSize(pBuffer) = (strlen(pTempName(pBuffer)) + 1) +
                                (strlen(pTempEmail(pBuffer)) + 1) + sizeof(int);
 
+  // Checa se a quantidadade de bytes usados(pUSed) + o total de bytes usados
+  // para armazenar a pessoa(pTotalPersonSize) e maior que a
+  // capacidade total do pBuffer(pCapacity)
   if (*pUsed(pBuffer) + *pTotalPersonSize(pBuffer) > *pCapacity(pBuffer)) {
     *pCapacity(pBuffer) = *pUsed(pBuffer) + *pTotalPersonSize(pBuffer);
 
@@ -148,45 +152,63 @@ void addPerson(void **pBufferPtr) {
   (*pCount(pBuffer))++;
 }
 
-// void removePerson(void *pBuffer) {
-//   //   Check if pCount is equal to 0
-//   if (*pCount(pBuffer) == 0) {
-//     printf("ERROR: Agenda is empty\n");
-//     return;
-//   }
-//   void *pTemp = ((int *)pBuffer + 6);
-//   printf("\tInsert Name: ");
-//   scanf(" %[^\n]", (char *)pTemp);
+void removePerson(void **pBufferPtr) {
+  void *pBuffer = *pBufferPtr;
+  void *newBuffer;
+  //   Check if pCount is equal to 0
+  if (*pCount(pBuffer) == 0) {
+    printf("ERROR: Agenda is empty\n");
+    return;
+  }
+  printf("\tInsert Name: ");
+  scanf(" %[^\n]", pTempName(pBuffer));
 
-//   *((int *)pBuffer + 5) = -1; // pIndexFound = -1;
-//   //   for(int i = 0; i< count;i++);
-//   for (*pI(pBuffer) = 0; *pI(pBuffer) < *pCount(pBuffer); (*pI(pBuffer))++) {
-//     if (strcmp((char *)pTemp, (char *)(pBuffer + INITIAL_SIZE +
-//                                        ((*pI(pBuffer)) * PERSON_SIZE))) == 0)
-//                                        {
-//       *((int *)pBuffer + 5) = *pI(pBuffer); // pIndexFound = pI;
-//       break;
-//     }
-//   }
-//   if ((*((int *)pBuffer + 5)) == -1) {
-//     printf("ERROR: %s not found\n", (char *)pTemp);
-//     return;
-//   }
+  *pIndexFound(pBuffer) = -1; // pIndexFound = -1;
+  char *pReader = pBuffer + DATA_START_OFFSET;
+  char *pDestination = NULL;
+  char *pOrigin = NULL;
+  //   for(int i = 0; i< count;i++);
+  for (*pI(pBuffer) = 0; *pI(pBuffer) < *pCount(pBuffer); (*pI(pBuffer))++) {
+    if (*pIndexFound(pBuffer) && strcmp(pTempName(pBuffer), pReader) == 0) {
+      *pIndexFound(pBuffer) = *pI(pBuffer); // pIndexFound = pI;
+      pDestination = pReader;
+      // Tamanho do nome + tamanho do email(pReader move ate acabar o tamanho
+      // nome) + sizeof(int)
+      *pTotalPersonSize(pBuffer) =
+          (strlen(pReader) + 1) +
+          (strlen(pReader + (strlen(pReader) + 1)) + 1) + sizeof(int);
+    }
+    // Acha a proxima pessoa
+    if (*pI(pBuffer) == *pIndexFound(pBuffer) + 1) {
+      pOrigin = pReader;
+    }
 
-//   for (*pI(pBuffer) = *((int *)pBuffer + 5);
-//        *pI(pBuffer) < *pCount(pBuffer) - 1; (*pI(pBuffer))++) {
-//     void *pDestination =
-//         (void *)(pBuffer + INITIAL_SIZE + ((*pI(pBuffer)) * PERSON_SIZE));
-//     *pJ(pBuffer) = (*pI(pBuffer)) + 1;
+    pReader += strlen(pReader) + 1;
+    pReader += strlen(pReader) + 1;
+    pReader += sizeof(int);
+  }
 
-//     void *pOrigin =
-//         (void *)(pBuffer + INITIAL_SIZE + ((*pJ(pBuffer)) * PERSON_SIZE));
+  if (*pIndexFound(pBuffer) == -1) {
+    printf("ERROR: %s not found\n", pTempName(pBuffer));
+    return;
+  }
+  char *pFim = (char *)pBuffer + *pUsed(pBuffer);
+  if ((pFim - pOrigin) > 0) {
+    memmove(pDestination, pOrigin, pFim - pOrigin);
+  }
+  *pUsed(pBuffer) -= *pTotalPersonSize(pBuffer);
+  (*pCount(pBuffer))--;
+  newBuffer = realloc(pBuffer, *pUsed(pBuffer));
+  if (newBuffer == NULL) {
+    printf("WARN: realloc to shrink failed, but data is safe.\n");
+  } else {
+    *pBufferPtr = newBuffer;
+    pBuffer = newBuffer;
+    *pCapacity(pBuffer) = *pUsed(pBuffer);
+  }
 
-//     memcpy(pDestination, pOrigin, PERSON_SIZE);
-//   }
-//   (*pCount(pBuffer))--;
-//   printf("SUCCESS: %s was removed.\n", (char *)pTemp);
-// }
+  printf("SUCCESS: %s was removed.\n", pTempName(pBuffer));
+}
 
 void searchPerson(void *pBuffer) {
   //   Check if pCount is equal to 0
