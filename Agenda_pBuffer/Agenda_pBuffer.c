@@ -7,7 +7,7 @@
 #define EMAIL_SIZE 30
 
 // MACROS para as variaveis do tipo inteiro para controle
-#define MENU( pBuffer ) ( ( int* )pBuffer )
+#define MENU( pBuffer ) ( ( int* )( pBuffer ) )
 #define COUNT( pBuffer ) ( ( int* )pBuffer + 1 )
 #define I( pBuffer ) ( ( int* )pBuffer + 2 )
 #define USED_DATA( pBuffer ) ( ( int* )pBuffer + 3 )
@@ -39,6 +39,9 @@ void removePerson( void** pBufferPtr );
 void searchPerson( void* pBuffer );
 void listAgenda( void* pBuffer );
 
+// Funcao auxiliar para  mover para o proximo registro
+void moveToNextPerson( char** pCurrentPersonPtr );
+
 int main() {
 	void* pBuffer;
 
@@ -66,15 +69,10 @@ int main() {
 		}
 	}
 }
-/**
- * @brief Inicializacao do pBuffer.
- *
- * Esta funcao recebe o endereco da variavel pBuffer e aloca o espaco inicial para o controle
- * e para as variaveis temporarias.
- * Tambem ele zera as variaves de controle usando calloc.
- */
+
 void initBuffer( void** pBufferPtr ) {
 	*pBufferPtr = calloc( 1, DATA_START_AREA ); //  espaco para as variaveis de controle e o buffer temporario
+	// Utilizacao do calloc, por causa que ele ja zera todos os bytes dele
 
 	if( *pBufferPtr == NULL ) {
 		printf( "pBuffer: Memory Allocation failed\n" );
@@ -82,14 +80,7 @@ void initBuffer( void** pBufferPtr ) {
 	}
 	*USED_DATA( *pBufferPtr ) = DATA_START_AREA; // local para o comeco da area de dados
 }
-/**
- * @brief Mostra o menu de opções e captura a escolha do usuário.
- *
- * Esta função mostra o menu de opcoes da agenda e pede para o usuario inserir um comando(de 1 a 5).
- * Ela garante, atraves de um loop, que apenas uma opcao valida seja aceita.
- * A escolha validada e inserida na area reservada para o menu no pBuffer.
- *
- */
+
 void menu( void* pBuffer ) {
 	do {
 		printf( "-----------AGENDA pBuffer-----------\n\n" );
@@ -189,9 +180,7 @@ void removePerson( void** pBufferPtr ) {
 		}
 
 		// Avança o leitor para o próximo registro
-		pReader += strlen( pReader ) + 1;
-		pReader += strlen( pReader ) + 1;
-		pReader += sizeof( int );
+		moveToNextPerson( &pReader );
 	}
 	//Teste para ver se encontrou o nome na agenda
 	if( pMoveTo == NULL ) {
@@ -211,10 +200,6 @@ void removePerson( void** pBufferPtr ) {
 	*USED_DATA( pBuffer ) -= *TOTAL_PERSON_SIZE( pBuffer );
 	( *COUNT( pBuffer ) )--; //Decremento da quantidade de pesoas
 
-	// Teste para ver se os bytes usados e menor que o Tamanho Inicial
-	if( *USED_DATA( pBuffer ) <= DATA_START_AREA ) {
-		*USED_DATA( pBuffer ) = DATA_START_AREA; // Seta para o tamanho inicial
-	}
 	// Realloc para o novo tamanho(sem a pessoa removida)
 	newBuffer = realloc( pBuffer, *USED_DATA( pBuffer ) );
 
@@ -245,28 +230,24 @@ void searchPerson( void* pBuffer ) {
 		// Teste para ver se o nome que eu quero buscar esta na agenda
 		// Se estiver ele printa os dados da pessoa
 		if( strcmp( TEMP_NAME( pBuffer ), pReader ) == 0 ) {
-			printf( "Name: %s\n", pReader );
+			char* pName	 = pReader;
+			char* pEmail = pName + strlen( pName ) + 1;
+			char* pAge	 = pEmail + strlen( pEmail ) + 1;
 
-			// Pula o Tamanho do Nome + \0
-			pReader += strlen( pReader ) + 1;
-			printf( "Email: %s\n", pReader );
-
-			// Pula o Tamanho do Email + \0
-			pReader += strlen( pReader ) + 1;
-			printf( "Age: %d\n", *( ( int* )pReader ) );
+			// Imprime os dados usando os ponteiros locais
+			printf( "Name: %s\n", pName );
+			printf( "Email: %s\n", pEmail );
+			printf( "Age: %d\n", *( ( int* )pAge ) );
 			printf( "\n" );
-			// Pula o tamanho do inteiro
-			pReader += sizeof( int );
 			return;
 		}
 		// Pula para a proxima registro
-		pReader += strlen( pReader ) + 1; // Pula o Tamanho do Nome + \0
-		pReader += strlen( pReader ) + 1; // Pula o Tamanho do Email + \0
-		pReader += sizeof( int );		  // Pula o tamanho do inteiro para ler o proximo nome
+		moveToNextPerson( &pReader );
 	}
 	// Se percorer toda a agenda e nao enocontrar printa que nao foi encontrado na agenda
 	printf( "ERROR: %s not found\n", TEMP_NAME( pBuffer ) );
 }
+
 void listAgenda( void* pBuffer ) {
 	//   Testa se a agenda esta vazia
 	if( *COUNT( pBuffer ) == 0 ) {
@@ -279,17 +260,32 @@ void listAgenda( void* pBuffer ) {
 
 	// loop para percorrer todas as pessoas na agenda
 	for( *I( pBuffer ) = 0; ( *I( pBuffer ) ) < *COUNT( pBuffer ); ( *I( pBuffer ) )++ ) {
-		printf( "Name: %s\n", pReader );
+		// Define ponteiros locais para cada campo da pessoa
+		char* pName	 = pReader;
+		char* pEmail = pName + strlen( pName ) + 1;
+		char* pAge	 = pEmail + strlen( pEmail ) + 1;
 
-		// Pula o Tamanho do Nome + \0
-		pReader += strlen( pReader ) + 1;
-		printf( "Email: %s\n", pReader );
-
-		// Pula o Tamanho do Email + \0
-		pReader += strlen( pReader ) + 1;
-		printf( "Age: %d\n", *( ( int* )pReader ) );
+		// Imprime os dados usando os ponteiros locais
+		printf( "Name: %s\n", pName );
+		printf( "Email: %s\n", pEmail );
+		printf( "Age: %d\n", *( ( int* )pAge ) );
 		printf( "\n" );
-		// Pula o tamanho do inteiro para ler o proximo nome
-		pReader += sizeof( int );
+
+		moveToNextPerson( &pReader );
 	}
+}
+
+void moveToNextPerson( char** pCurrentPersonPtr ) {
+	char* pPerson = *pCurrentPersonPtr;
+	//Avança sobre o Nome (string + '\0')
+	pPerson += strlen( pPerson ) + 1;
+
+	//Avança sobre o E-mail (string + '\0')
+	pPerson += strlen( pPerson ) + 1;
+
+	//Avança sobre a Idade (int)
+	pPerson += sizeof( int );
+
+	//Atualiza o ponteiro original
+	*pCurrentPersonPtr = pPerson;
 }
