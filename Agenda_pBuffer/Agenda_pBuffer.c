@@ -195,8 +195,8 @@ void removePerson( void** pBufferPtr ) {
 	if( pMoveFrom != NULL ) {
 		// Endereco do final de toda a area de dados
 		char* pEnd = ( char* )pBuffer + *USED_DATA( pBuffer );
-		// Ele move toda a parte seguinte ao nome que eu quero remover(pMoveFrom ate
-		// pEnd) para a posicao do nome que eu quero remover(pMoveTo)
+		// Ele move toda a parte seguinte ao nome que eu quero remover(pMoveFrom ate pEnd)
+		// para a posicao do nome que eu quero remover(pMoveTo)
 		memmove( pMoveTo, pMoveFrom, pEnd - pMoveFrom );
 		// Usa o memmove por causa que as areas da memoria de origem e destino vao
 		// se sobrepor
