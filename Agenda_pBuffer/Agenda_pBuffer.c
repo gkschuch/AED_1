@@ -133,17 +133,17 @@ void addPerson( void** pBufferPtr ) {
   para o final da do inteiro
   */
 
-	//            Destino                                origem numero de bytes
+	//            Destino                                origem                numero de bytes
 	memcpy( ( char* )pBuffer + *USED_DATA( pBuffer ), TEMP_NAME( pBuffer ), strlen( TEMP_NAME( pBuffer ) ) + 1 );
 	//  USED_DATA = USED_DATA + tamanho do nome + \0
 	*USED_DATA( pBuffer ) += strlen( TEMP_NAME( pBuffer ) ) + 1;
 
-	//            Destino                                origem numero de bytes
+	//            Destino                                origem                   numero de bytes
 	memcpy( ( char* )pBuffer + *USED_DATA( pBuffer ), TEMP_EMAIL( pBuffer ), strlen( TEMP_EMAIL( pBuffer ) ) + 1 );
 	//  USED_DATA = USED_DATA + tamanho do email + \0
 	*USED_DATA( pBuffer ) += strlen( TEMP_EMAIL( pBuffer ) ) + 1;
 
-	//            Destino                                origem numero de bytes
+	//            Destino                                origem                numero de bytes
 	memcpy( ( char* )pBuffer + *USED_DATA( pBuffer ), TEMP_AGE( pBuffer ), sizeof( int ) );
 	//  USED_DATA = USED_DATA + tamanho do inteiro
 	*USED_DATA( pBuffer ) += sizeof( int );
@@ -165,10 +165,9 @@ void removePerson( void** pBufferPtr ) {
 	scanf( " %[^\n]", TEMP_NAME( pBuffer ) );
 
 	//  Cria os ponteiros
-	char* pReader = pBuffer + DATA_START_AREA; // Ponteiro para percorrer a lista
-	char* pMoveTo = NULL;					   // Ponteiro para o destino(Pessoa que eu quero remover)
-	char* pMoveFrom =
-		NULL; // Ponteiro para a origem(Pessoa seguinte da que eu quero remover)
+	char* pReader	= pBuffer + DATA_START_AREA; // Ponteiro para percorrer a lista
+	char* pMoveTo	= NULL;						 // Ponteiro para o destino(Pessoa que eu quero remover)
+	char* pMoveFrom = NULL;						 // Ponteiro para a origem(Pessoa seguinte da que eu quero remover)
 
 	for( *I( pBuffer ) = 0; *I( pBuffer ) < *COUNT( pBuffer ); ( *I( pBuffer ) )++ ) {
 		// Acha a proximo endereco para a origem e sai do loop
