@@ -102,9 +102,9 @@ void addPerson( void** pBufferPtr ) {
 
 	printf( "Person to add\n" );
 	printf( "\tInsert Name: " );
-	scanf( " %[^\n]", TEMP_NAME( pBuffer ) );
+	scanf( " %19[^\n]", TEMP_NAME( pBuffer ) );
 	printf( "\tInsert Email: " );
-	scanf( " %[^\n]", TEMP_EMAIL( pBuffer ) );
+	scanf( " %29[^\n]", TEMP_EMAIL( pBuffer ) );
 	printf( "\tInsert Age: " );
 	scanf( " %d", TEMP_AGE( pBuffer ) );
 
@@ -162,12 +162,12 @@ void removePerson( void** pBufferPtr ) {
 	}
 	// Insere o nome para remover
 	printf( "\tInsert Name: " );
-	scanf( " %[^\n]", TEMP_NAME( pBuffer ) );
+	scanf( " %19[^\n]", TEMP_NAME( pBuffer ) );
 
 	//  Cria os ponteiros
-	char* pReader	= pBuffer + DATA_START_AREA; // Ponteiro para percorrer a lista
-	char* pMoveTo	= NULL;						 // Ponteiro para o destino(Pessoa que eu quero remover)
-	char* pMoveFrom = NULL;						 // Ponteiro para a origem(Pessoa seguinte da que eu quero remover)
+	char* pReader	= ( char* )pBuffer + DATA_START_AREA; // Ponteiro para percorrer a lista
+	char* pMoveTo	= NULL;								  // Ponteiro para o destino(Pessoa que eu quero remover)
+	char* pMoveFrom = NULL;								  // Ponteiro para a origem(Pessoa seguinte da que eu quero remover)
 
 	for( *I( pBuffer ) = 0; *I( pBuffer ) < *COUNT( pBuffer ); ( *I( pBuffer ) )++ ) {
 		// Acha a proximo endereco para a origem e sai do loop
@@ -226,9 +226,9 @@ void searchPerson( void* pBuffer ) {
 		return;
 	}
 	printf( "\tInsert Name: " );
-	scanf( " %[^\n]", TEMP_NAME( pBuffer ) );
+	scanf( " %19[^\n]", TEMP_NAME( pBuffer ) );
 	//  Criar um ponteiro para percorrer pela os dados
-	char* pReader = pBuffer + DATA_START_AREA;
+	char* pReader = ( char* )pBuffer + DATA_START_AREA;
 
 	// loop para percorrer todas as pessoas na agenda
 	for( *I( pBuffer ) = 0; *I( pBuffer ) < *COUNT( pBuffer ); ( *I( pBuffer ) )++ ) {
@@ -261,7 +261,7 @@ void listAgenda( void* pBuffer ) {
 		return;
 	}
 	//  Criar um ponteiro para percorrer pela os dados
-	char* pReader = pBuffer + DATA_START_AREA;
+	char* pReader = ( char* )pBuffer + DATA_START_AREA;
 	printf( "\t AGENDA LIST (%d)\n", *COUNT( pBuffer ) );
 
 	// loop para percorrer todas as pessoas na agenda
