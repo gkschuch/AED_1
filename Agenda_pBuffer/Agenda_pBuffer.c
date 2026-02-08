@@ -79,8 +79,7 @@ void initBuffer( void** pBufferPtr ) {
 		printf( "pBuffer: Memory Allocation failed\n" );
 		exit( 1 );
 	}
-	*USED_DATA( *pBufferPtr ) =
-		DATA_START_AREA; // local para o comeco da area de dados
+	*USED_DATA( *pBufferPtr ) = DATA_START_AREA; // local para o comeco da area de dados
 }
 
 void menu( void* pBuffer ) {
@@ -112,8 +111,7 @@ void addPerson( void** pBufferPtr ) {
 	*TOTAL_PERSON_SIZE( pBuffer ) = ( strlen( TEMP_NAME( pBuffer ) ) + 1 ) + ( strlen( TEMP_EMAIL( pBuffer ) ) + 1 ) + sizeof( int );
 
 	// Realloc para o novo espaco, com o espaco para armazenar 1 pessoa
-	newBuffer =
-		realloc( pBuffer, *USED_DATA( pBuffer ) + *TOTAL_PERSON_SIZE( pBuffer ) );
+	newBuffer = realloc( pBuffer, *USED_DATA( pBuffer ) + *TOTAL_PERSON_SIZE( pBuffer ) );
 
 	// Verificação de falha do realloc
 	if( newBuffer == NULL ) {
